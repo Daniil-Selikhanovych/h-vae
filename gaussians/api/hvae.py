@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from base_model import BaseModel
 
@@ -95,7 +96,7 @@ class HVAE(BaseModel):
             z_K: Final position after HIS evolution
             p_K: Final momentum after HIS evolution
         Returns:
-            elbo: The ELBO objective as a tensorflow object
+            elbo: The ELBO objective as a PyTorch object
         """
         x = torch.tensor(x, dtype=torch.float32)
         self.x_bar = torch.sum(x, 0)
