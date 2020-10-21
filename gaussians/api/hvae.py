@@ -34,8 +34,8 @@ class HVAE(BaseModel):
         p_graph = {}
 
         # Sample initial values with reparametrization if necessary
-        z_0 = self.std_norm.sample([self.n_batch])
-        gamma_0 = self.std_norm.sample([self.n_batch])
+        z_0 = self.std_norm.sample([self.n_batch]).to(self.device)
+        gamma_0 = self.std_norm.sample([self.n_batch]).to(self.device)
 
         if not self.tempering:
             p_0 = gamma_0

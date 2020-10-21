@@ -19,17 +19,19 @@ class BaseModel():
         Args
             params: dict of parameters for setup
             var_names: PyTorch variable names
-            var_inits: Initial values for variables as list of numpy arrays
+            var_inits: Initial values for variables as list of PyTorch arrays
             model_name: Name of the model to test
             d: Dimensionality of the problem
         """
 
         # Variable initialization
+        self.dtype = var_inits[0].dtype
+        self.device = var_inits[0].device
+        
         torch_vars = []
         for i in range(len(var_inits)):
-            torch_vars.append(Variable(torch.tensor(var_inits[i], 
-                                                    dtype=torch.float32), 
-                                       requires_grad=True))
+            torch_vars.append(Variable(var_inits[i], 
+                                       requires_grad=True).to(self.device))
 
         self.params = params
         self.var_names = var_names
@@ -40,8 +42,8 @@ class BaseModel():
         self.d = d
         
         self.n_batch = params['n_batch']
-        self.std_norm = Normal(loc=torch.zeros(d, dtype=torch.float32), 
-                               scale=torch.ones(d, dtype=torch.float32))
+        self.std_norm = Normal(loc=torch.zeros(d, dtype=self.dtype), 
+                               scale=torch.ones(d, dtype=self.dtype))
 
         # First two PyTorch variables will be the same across methods
         self.delta = torch_vars[0]
@@ -56,7 +58,7 @@ class BaseModel():
         """ 
         Train the model.
         Args:
-            train_x: Numpy training data
+            train_x: PyTorch training data
             train_ind: Index of training run
         Returns:
             delta: Value of delta at end of training
@@ -71,21 +73,22 @@ class BaseModel():
         hist_dict = {}
 
         for j in range(len(self.torch_vars)):
-            initial = self.var_inits[j]
+            initial = self.var_inits[j].clone().detach().cpu()
 
             # Careful with scalars vs. arrays
-            if isinstance(initial, np.ndarray):
-                hist_array = np.zeros([hist_length] + list(initial.shape))
+            if len(initial.shape) > 0:
+                hist_array = torch.zeros([hist_length] + list(initial.shape), 
+                                         dtype=self.dtype).numpy()
                 hist_array[0, :] = initial
             else:
-                hist_array = np.zeros(hist_length)
+                hist_array = torch.zeros(hist_length, dtype=self.dtype).numpy()
                 hist_array[0] = initial
 
             hist_dict[self.var_names[j]] = hist_array
         
         self.x_bar = torch.sum(train_x, 0)
         self.C_xx = torch.einsum('ij,ik->jk', train_x, train_x)
-        hist_dict['elbo'] = np.zeros(hist_length)
+        hist_dict['elbo'] = torch.zeros(hist_length, dtype=self.dtype)
 
         #print("Start calculation initial ELBO value")
         self.elbo = self._get_elbo(train_x)
@@ -116,15 +119,13 @@ class BaseModel():
                     value = self.torch_vars[j].clone().detach().cpu()
                     if len(value.shape) > 0:
                         value = value.numpy()
-                    else:
-                        value = value.item()
-
-                    if isinstance(value, np.ndarray):
                         hist_dict[self.var_names[j]][save_idx, :] = value
                     else:
+                        value = value.item()
                         hist_dict[self.var_names[j]][save_idx] = value
 
-                hist_dict['elbo'] = self.elbo
+
+                hist_dict['elbo'] = self.elbo.detach().cpu().item()
 
                 # Assume params['print_every'] divides params['save_every']
                 if (i+1) % self.params['print_every'] == 0:
@@ -135,7 +136,7 @@ class BaseModel():
                         train_ind+1,
                         i+1,
                         (time.time()-t0) / self.params['print_every'],
-                        hist_dict['elbo'].detach().cpu().item()
+                        hist_dict['elbo']
                         )
                     )
                     t0 = time.time()
