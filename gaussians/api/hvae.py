@@ -98,9 +98,8 @@ class HVAE(BaseModel):
         Returns:
             elbo: The ELBO objective as a PyTorch object
         """
-        x_torch = torch.tensor(x, dtype=torch.float32)
-        self.x_bar = torch.sum(x_torch, 0)
-        self.C_xx = torch.einsum('ij,ik->jk', x_torch, x_torch)
+        self.x_bar = torch.sum(x, 0)
+        self.C_xx = torch.einsum('ij,ik->jk', x, x)
 
         (z_0, p_0, z_K, p_K) = self._his()
 
