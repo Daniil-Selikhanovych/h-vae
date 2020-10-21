@@ -98,7 +98,7 @@ class BaseModel():
         #print(self.torch_vars)
         t0 = time.time()
 
-        for i in range(params['n_iter']):
+        for i in range(self.params['n_iter']):
             self.elbo = self._get_elbo(train_x)
             loss = -self.elbo
             self.optimizer.zero_grad()
@@ -127,14 +127,14 @@ class BaseModel():
                 hist_dict['elbo'] = self.elbo
 
                 # Assume params['print_every'] divides params['save_every']
-                if (i+1) % params['print_every'] == 0:
+                if (i+1) % self.params['print_every'] == 0:
                     print(('{0}, d: {1:d}, Iter: {2:d}-{3:d}, s/iter:'
                         + ' {4:.3e}, ELBO: {5:.3e}').format(
                         self.model_name,
                         self.d,
                         train_ind+1,
                         i+1,
-                        (time.time()-t0) / params['print_every'],
+                        (time.time()-t0) / self.params['print_every'],
                         hist_dict['elbo'].detach().cpu().item()
                         )
                     )
