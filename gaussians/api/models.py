@@ -286,7 +286,7 @@ class HVAE(BaseModel):
             + self.params['n_data']*(z_in + self.delta - self.x_bar)/var_x)
         return grad_U
 
-    def _get_elbo(self, x):
+    def _get_elbo(self, x, print_results=False):
         """ 
         Calculate the ELBO for HVAE 
         Args:
