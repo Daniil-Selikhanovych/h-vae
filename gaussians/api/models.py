@@ -406,10 +406,10 @@ class NF(BaseModel):
         Nd2_log2pi = self.d/2*np.log(2*np.pi)
         
         elbo = (- Nd2_log2pi - torch.sum(self.log_sigma)
-            - y_sig_y/params['n_data'] + mean_y_bar_sig_z
+            - y_sig_y/self.params['n_data'] + mean_y_bar_sig_z
             - 1./2.*mean_z_sig_z 
-            - (1./2*mean_z_T_z)/params['n_data'] 
-            + log_det_sum/params['n_data'])*params['n_data']
+            - (1./2*mean_z_T_z)/self.params['n_data'] 
+            + log_det_sum/self.params['n_data'])*self.params['n_data']
         
         if print_results:
             print_log_det_sum = log_det_sum.clone().detach().cpu().item()
