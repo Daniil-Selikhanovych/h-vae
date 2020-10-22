@@ -218,7 +218,7 @@ class HVAE(BaseModel):
             self.log_T_0 = self.torch_vars[-1]
 
 
-    def _his(self):
+    def _his(self, x_bar):
         """ 
         Perform the HIS step to evolve samples
         Returns:
@@ -229,6 +229,8 @@ class HVAE(BaseModel):
         """
         z_graph = {}
         p_graph = {}
+
+        x_bar = x_bar.clone().detach().to(self.device)
 
         # Sample initial values with reparametrization if necessary
         z_0 = self.std_norm.sample([self.n_batch]).to(self.device)
@@ -252,16 +254,16 @@ class HVAE(BaseModel):
         epsilon = self.params['max_eps'] / (1 + torch.exp(-self.logit_eps))
         var_x = torch.exp(2 * self.log_sigma)
 
-        # Now perform K alternating steps of leapfrog and cooling
+        # Now perform K alternating steps of leapf.to(self.device)rog and cooling
         for k in range(1, self.K+1):
                 
             # First perform a leapfrog step
             z_in = z_graph[k-1]
             p_in = p_graph[k-1]
 
-            p_half = p_in - 1/2*epsilon*self._dU_dz(z_in, var_x)
+            p_half = p_in - 1/2*epsilon*self._dU_dz(z_in, x_bar, var_x)
             z_k = z_in + epsilon*p_half
-            p_temp = p_half - 1/2*epsilon*self._dU_dz(z_k, var_x)
+            p_temp = p_half - 1/2*epsilon*self._dU_dz(z_k, x_bar, var_x)
 
             # Then do tempering
             if self.tempering: 
@@ -280,32 +282,31 @@ class HVAE(BaseModel):
 
         return (z_0, p_0, z_K, p_K)
 
-    def _dU_dz(self, z_in, var_x):
+    def _dU_dz(self, z_in, x_bar, var_x):
         """ Calculate the gradient of the potential wrt z_in """
         grad_U = (z_in 
-            + self.params['n_data']*(z_in + self.delta - self.x_bar)/var_x)
+            + self.params['n_data']*(z_in + self.delta - x_bar)/var_x)
         return grad_U
 
     def _get_elbo(self, x, print_results=False):
         """ 
         Calculate the ELBO for HVAE 
         Args:
-            z_K: Final position after HIS evolution
-            p_K: Final momentum after HIS evolution
+            x: data
         Returns:
             elbo: The ELBO objective as a PyTorch object
         """
-        self.x_bar = torch.sum(x, 0)
-        self.C_xx = torch.einsum('ij,ik->jk', x, x)
+        x_bar = torch.mean(x, 0)
+        C_xx = torch.einsum('ij,ik->jk', x, x)
 
-        (z_0, p_0, z_K, p_K) = self._his()
+        (z_0, p_0, z_K, p_K) = self._his(x_bar)
 
         var_inv_vec = torch.exp(-2*self.log_sigma)
         var_inv_mat = torch.diag(var_inv_vec)
-        trace_term = torch.trace(torch.matmul(var_inv_mat, self.C_xx))
+        trace_term = torch.trace(torch.matmul(var_inv_mat, C_xx))
 
         z_sigX_z = torch.sum((z_K + self.delta) * var_inv_vec * 
-            (z_K + self.delta - 2*self.x_bar), 1)
+            (z_K + self.delta - 2*x_bar), 1)
         z_T_z = torch.sum(z_K*z_K, 1)
         p_T_p = torch.sum(p_K*p_K, 1)
 
