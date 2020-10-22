@@ -3,7 +3,8 @@ import numpy as np
 import torch
 from torch.distributions.normal import Normal
 import torch.optim as optim
-from torch.autograd import Variable
+from torch.nn import Parameter
+from torch import nn
 
 import time
 import pickle
