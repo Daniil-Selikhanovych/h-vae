@@ -111,9 +111,9 @@ class BaseModel(nn.Module):
         for i in range(self.params['n_iter']):
             #train_x = train_x.detach()
             if (i+1) % self.params['print_every'] == 0:
-                elbo = self._get_elbo(train_x, True)
+                elbo = self._get_elbo(train_x, print_results=True)
             else:
-                elbo = self._get_elbo(train_x, False)
+                elbo = self._get_elbo(train_x, print_results=False)
             loss = -elbo
             optimizer.zero_grad()
             loss.backward()
