@@ -423,3 +423,42 @@ class NF(BaseModel):
             print(f"mean_y_bar_sig_z = {print_mean_y_bar_sig_z}")
 
         return elbo
+        
+class VB(BaseModel):
+    """ Specific implementation of Variational Bayes """
+
+    def __init__(self, params, var_names, var_inits, model_name, d):
+        """ Initialize model including ELBO calculation """
+
+        super().__init__(params, var_names, var_inits, model_name, d)
+
+        self.mu_z = self.torch_vars[2]
+        self.log_sigma_z = self.torch_vars[3]
+
+    def _get_elbo(self, x, print_results=False):
+        """ 
+        Calculate the ELBO for the VB example
+        Returns:
+            elbo: The ELBO objective as a tensorflow object
+        """
+        var_inv_vec = torch.exp(-2 * self.log_sigma)
+
+        # Note that for this VB scheme the ELBO is completely deterministic
+        y_sig_y = torch.sum((x - self.delta)**2 * var_inv_vec)
+        y_sig_mu = torch.sum((x - self.delta) * var_inv_vec * self.mu_z)
+
+        var_Z_over_var_X = torch.sum(torch.exp(2*self.log_sigma_z)* var_inv_vec)
+
+        mu_sig_mu = torch.sum(self.mu_z**2 * var_inv_vec)
+        mu_T_mu = torch.sum(self.mu_z**2)
+
+        Nd2_log2pi = params['n_data']*self.d/2*np.log(2*np.pi)
+
+        elbo = (- Nd2_log2pi + torch.sum(self.log_sigma_z) 
+            - params['n_data']*torch.sum(self.log_sigma) - 1/2*y_sig_y 
+            + y_sig_mu - params['n_data']/2*(var_Z_over_var_X + mu_sig_mu)
+            - 1/2*torch.sum(torch.exp(2*self.log_sigma_z)) - 1/2*mu_T_mu 
+            - self.d/2
+            )
+
+        return elbo
