@@ -199,6 +199,9 @@ class BaseModel(nn.Module):
     def _get_elbo(self, x, print_results=False):
         raise NotImplementedError
         
+    def _reinitialize(self, params):
+        raise NotImplementedError
+        
 class HVAE(BaseModel):
     """ Specific implementation of HVAE """
 
@@ -318,6 +321,28 @@ class HVAE(BaseModel):
             + self.d - Nd2_log2pi)
 
         return elbo
+    
+    def _reinitialize(self, params):
+        torch_var_inits = []
+        torch_vars = []
+        for i in range(len(params)):
+            cur_params = params[i].clone().detach().to(self.device)
+            torch_var_inits.append(cur_params)
+            torch_vars.append(Parameter(cur_params))
+            
+        self.torch_vars = torch_vars
+        self.var_inits = torch_var_inits
+        self.delta = torch_vars[0]
+        self.log_sigma = torch_vars[1]
+        self.logit_eps = self.torch_vars[2]
+
+        # If there are only three variables, it means we are not tempering
+        if len(self.var_names) == len(params) == 3:
+            self.tempering = False
+        else:
+            self.tempering = True
+            self.log_T_0 = self.torch_vars[-1]
+        
         
 class NF(BaseModel):
     """ Specific implementation of the Normalizing Flow """
@@ -424,6 +449,22 @@ class NF(BaseModel):
 
         return elbo
         
+    def _reinitialize(self, params):
+        torch_var_inits = []
+        torch_vars = []
+        for i in range(len(params)):
+            cur_params = params[i].clone().detach().to(self.device)
+            torch_var_inits.append(cur_params)
+            torch_vars.append(Parameter(cur_params))
+            
+        self.torch_vars = torch_vars
+        self.var_inits = torch_var_inits
+        self.delta = torch_vars[0]
+        self.log_sigma = torch_vars[1]
+        self.u_pre_reparam = self.torch_vars[2]
+        self.w = self.torch_vars[3]
+        self.b = self.torch_vars[4]
+        
 class VB(BaseModel):
     """ Specific implementation of Variational Bayes """
 
@@ -462,3 +503,18 @@ class VB(BaseModel):
             )
 
         return elbo
+        
+    def _reinitialize(self, params):
+        torch_var_inits = []
+        torch_vars = []
+        for i in range(len(params)):
+            cur_params = params[i].clone().detach().to(self.device)
+            torch_var_inits.append(cur_params)
+            torch_vars.append(Parameter(cur_params))
+            
+        self.torch_vars = torch_vars
+        self.var_inits = torch_var_inits
+        self.delta = torch_vars[0]
+        self.log_sigma = torch_vars[1]
+        self.mu_z = self.torch_vars[2]
+        self.log_sigma_z = self.torch_vars[3]
