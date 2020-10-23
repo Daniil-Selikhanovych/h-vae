@@ -6,6 +6,8 @@ import torch.optim as optim
 from torch.nn import Parameter
 from torch import nn
 
+from pyro.nn import AutoRegressiveNN
+
 import time
 import pickle
 import os
@@ -105,7 +107,7 @@ class BaseModel(nn.Module):
             iter_elbo += elbo.detach().cpu().item()
         hist_dict['elbo'][0] = iter_elbo
 
-        optimizer = optim.RMSprop(self.torch_vars, lr=self.params['rms_eta'])
+        optimizer = optim.RMSprop(self.parameters(), lr=self.params['rms_eta'])
 
         # Now move to training loop
         #print("Start training loop")
@@ -522,3 +524,130 @@ class VB(BaseModel):
         self.log_sigma = torch_vars[1]
         self.mu_z = self.torch_vars[2]
         self.log_sigma_z = self.torch_vars[3]
+        
+class IATransform(nn.Module):
+    def __init__(self, in_dim, h_dim, rand_perm=True):
+        super(IATransform, self).__init__()
+        # YOUR CODE HERE
+        self.AR = AutoRegressiveNN(input_dim = in_dim, 
+                                   hidden_dims = [h_dim])
+        self.rand_perm = rand_perm
+    def forward(self, x):
+        """
+        Return transformed sample and log determinant
+        """
+        # YOUR CODE HERE
+        mu, log_sigma = self.AR(x)
+        mu = mu.to(x.device)
+        log_sigma = log_sigma.to(x.device)
+        result = mu + x * log_sigma.exp()
+        result = result[torch.randperm(result.shape[0])] if self.rand_perm \
+                else result
+        log_det = log_sigma.sum(axis=1)
+        return result, log_det        
+
+class IAF(BaseModel):
+    """ Specific implementation of the Normalizing Flow """
+
+    def __init__(self, params, var_names, var_inits, model_name, d, K, h_dim):
+        """ Initialize model including ELBO calculation """
+
+        super().__init__(params, var_names, var_inits, model_name, d)
+
+        self.K = K
+        self.h_dim = h_dim
+        self.IATransforms = nn.ModuleList([IATransform(d, h_dim) 
+                                           for i in range(K)])
+
+
+    def _nf(self):
+        """ 
+        Perform the flow step to get the final samples
+        Returns:RMSprop
+            z_0: Initial sample from variational prior
+            z_K: Final sample after normalizing flow
+            log_det_sum: Sum of log determinant terms at each flow step
+        """
+        z_graph = {}
+        log_det_sum = torch.tensor(0., dtype=self.dtype).to(self.device)
+
+        # Begin with sampling from the variational prior
+        z_0 = self.std_norm.sample([self.n_batch]).to(self.device)
+        z_graph[0] = z_0
+
+        # Now perform the flow steps
+        for i in range(1, self.K+1):
+
+            # Evolution bit
+            z_in = z_graph[i-1]
+
+            z_out, log_det = self.IATransforms[i - 1](z_in)
+            z_graph[i] = z_out
+
+            log_det_sum += torch.mean(log_det)
+
+        # Extract final z_K
+        z_K = z_graph[self.K]
+
+        return (z_0, z_K, log_det_sum)
+
+    def _get_elbo(self, x, print_results=False):
+        """ 
+        Calculate the ELBO for NF 
+        Args:
+            x: data
+        Returns:
+            elbo: The ELBO objective as a tensorflow object
+        """
+
+        (z_0, z_K, log_det_sum) = self._nf()
+        var_inv_vec = torch.exp(-2 * self.log_sigma)
+
+        # Note that we say y = x - mu_X for ease of naming
+        #x = x.clone().detach().to(self.device)
+        self.batch_size = x.shape[0]
+        x_bar = torch.mean(x, 0)
+
+        y_sig_y = torch.sum((x - self.delta)**2 * var_inv_vec)
+        y_bar_sig_z = torch.sum((x_bar - self.delta) 
+                                    * var_inv_vec * z_K, 1)
+        mean_y_bar_sig_z = torch.mean(y_bar_sig_z)
+        z_sig_z = torch.sum(z_K**2 * var_inv_vec, 1)
+        mean_z_sig_z = torch.mean(z_sig_z) 
+        z_T_z = torch.sum(z_K * z_K, 1)
+        mean_z_T_z = torch.mean(z_T_z)
+
+        Nd2_log2pi = self.d/2*np.log(2*np.pi)
+        
+        elbo = (- Nd2_log2pi - torch.sum(self.log_sigma)
+            - y_sig_y/self.batch_size + mean_y_bar_sig_z
+            - 1./2.*mean_z_sig_z 
+            - (1./2*mean_z_T_z)/self.batch_size 
+            + log_det_sum/self.batch_size)*self.batch_size
+        
+        if print_results:
+            print_log_det_sum = log_det_sum.clone().detach().cpu().item()
+            print_y_sig_y = y_sig_y.clone().detach().cpu().item()
+            print_mean_z_sig_z = mean_z_sig_z.clone().detach().cpu().item()
+            print_mean_z_T_z = mean_z_T_z.clone().detach().cpu().item()
+            print_mean_y_bar_sig_z = mean_y_bar_sig_z.clone().detach().cpu().item()
+            print(f"log_det_sum = {print_log_det_sum}, y_sig_y = {print_y_sig_y}")
+            print(f"mean_z_sig_z = {print_mean_z_sig_z}, mean_z_T_z = {print_mean_z_T_z}")
+            print(f"mean_y_bar_sig_z = {print_mean_y_bar_sig_z}")
+
+        return elbo
+
+    def _reinitialize(self, params):
+        torch_var_inits = []
+        torch_vars = []
+        for i in range(len(params)):
+            cur_params = params[i].clone().detach().to(self.device)
+            torch_var_inits.append(cur_params)
+            torch_vars.append(Parameter(cur_params))
+            
+        self.torch_vars = torch_vars
+        self.var_inits = torch_var_inits
+        self.delta = torch_vars[0]
+        self.log_sigma = torch_vars[1]
+        self.IATransforms = nn.ModuleList([IATransform(self.d, self.h_dim) 
+                                           for i in range(self.K)])
