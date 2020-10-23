@@ -57,7 +57,7 @@ class BaseModel(nn.Module):
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)
             
-    def train(self, train_x, train_ind, 
+    def train(self, dataloader, train_ind, 
               t_delta=None, t_sigma=None,
               clip_value=None):
         """ 
@@ -99,8 +99,12 @@ class BaseModel(nn.Module):
             print(f"Init diff theta = {theta_diff}")               
 
         #print("Start calculation initial ELBO value")
-        elbo = self._get_elbo(train_x).detach().cpu().item()
-        hist_dict['elbo'][0] = elbo
+        iter_elbo = 0.0
+        for train_x in dataloader:
+            elbo = self._get_elbo(train_x)
+            iter_elbo += elbo.detach().cpu().item()
+        hist_dict['elbo'][0] = iter_elbo
+
         optimizer = optim.RMSprop(self.torch_vars, lr=self.params['rms_eta'])
 
         # Now move to training loop
@@ -110,16 +114,23 @@ class BaseModel(nn.Module):
 
         for i in range(self.params['n_iter']):
             #train_x = train_x.detach()
-            if (i+1) % self.params['print_every'] == 0:
-                elbo = self._get_elbo(train_x, print_results=True)
-            else:
-                elbo = self._get_elbo(train_x, print_results=False)
-            loss = -elbo
-            optimizer.zero_grad()
-            loss.backward()
-            if clip_value is not None:
-                torch.nn.utils.clip_grad_norm_(self.parameters(), clip_value)
-            optimizer.step()
+            iter_elbo = 0.0
+            for train_x in dataloader:
+                elbo = self._get_elbo(train_x)
+                loss = -elbo
+                optimizer.zero_grad()
+                loss.backward()
+                if clip_value is not None:
+                    torch.nn.utils.clip_grad_norm_(self.parameters(), clip_value)
+                optimizer.step()
+                iter_elbo += elbo.detach().cpu().item()
+            #loss = -iter_elbo
+            #optimizer.zero_grad()
+            #loss.backward()
+            #if clip_value is not None:
+            #    torch.nn.utils.clip_grad_norm_(self.parameters(), clip_value)
+            #optimizer.step()
+            #iter_elbo = iter_elbo.detach().cpu().item()
             #print("Made optimization step!")
             #print(self.torch_vars)
 
@@ -143,7 +154,7 @@ class BaseModel(nn.Module):
                     theta_diff = delta_diff + sigma_diff                                    
                     hist_dict['diff_theta'][save_idx] = theta_diff   
                 
-                hist_dict['elbo'][save_idx] = elbo.detach().cpu().item()
+                hist_dict['elbo'][save_idx] = iter_elbo
 
             # Assume params['print_every'] divides params['save_every']
             if (i+1) % self.params['print_every'] == 0:
@@ -154,7 +165,7 @@ class BaseModel(nn.Module):
                     train_ind+1,
                     i+1,
                     (time.time()-t0) / self.params['print_every'],
-                    elbo.clone().detach().cpu().item()
+                    iter_elbo
                     )
                 )
                 t0 = time.time()
@@ -185,16 +196,6 @@ class BaseModel(nn.Module):
         sigma = np.exp(log_sigma)
 
         return (delta, sigma)
-
-    def _get_yk_z_sig(self, x, z_in):
-        yk_z_sig = torch.zeros(self.n_batch)
-
-        for k in range(self.params['n_data']):
-            x_k = x[k ,:]
-            yk_z_sig += torch.sum(
-                (x_k-self.delta-z_in)**2 * torch.exp(-2*self.log_sigma), 1)
-
-        return yk_z_sig
 
     def _get_elbo(self, x, print_results=False):
         raise NotImplementedError
@@ -288,7 +289,7 @@ class HVAE(BaseModel):
     def _dU_dz(self, z_in, x_bar, var_x):
         """ Calculate the gradient of the potential wrt z_in """
         grad_U = (z_in 
-            + self.params['n_data']*(z_in + self.delta - x_bar)/var_x)
+            + self.batch_size*(z_in + self.delta - x_bar)/var_x)
         return grad_U
 
     def _get_elbo(self, x, print_results=False):
@@ -299,6 +300,7 @@ class HVAE(BaseModel):
         Returns:
             elbo: The ELBO objective as a PyTorch object
         """
+        self.batch_size = x.shape[0]
         x_bar = torch.mean(x, 0)
         C_xx = torch.einsum('ij,ik->jk', x, x)
 
@@ -313,10 +315,10 @@ class HVAE(BaseModel):
         z_T_z = torch.sum(z_K*z_K, 1)
         p_T_p = torch.sum(p_K*p_K, 1)
 
-        Nd2_log2pi = self.params['n_data']*self.d/2*np.log(2*np.pi)
+        Nd2_log2pi = self.batch_size*self.d/2*np.log(2*np.pi)
 
-        elbo = (-self.params['n_data']*torch.sum(self.log_sigma) 
-            - trace_term/2 - self.params['n_data']/2*torch.mean(z_sigX_z)
+        elbo = (-self.batch_size*torch.sum(self.log_sigma) 
+            - trace_term/2 - self.batch_size/2*torch.mean(z_sigX_z)
             - 1/2*(torch.mean(z_T_z) + torch.mean(p_T_p))
             + self.d - Nd2_log2pi)
 
@@ -418,6 +420,7 @@ class NF(BaseModel):
 
         # Note that we say y = x - mu_X for ease of naming
         #x = x.clone().detach().to(self.device)
+        self.batch_size = x.shape[0]
         x_bar = torch.mean(x, 0)
 
         y_sig_y = torch.sum((x - self.delta)**2 * var_inv_vec)
@@ -432,10 +435,10 @@ class NF(BaseModel):
         Nd2_log2pi = self.d/2*np.log(2*np.pi)
         
         elbo = (- Nd2_log2pi - torch.sum(self.log_sigma)
-            - y_sig_y/self.params['n_data'] + mean_y_bar_sig_z
+            - y_sig_y/self.batch_size + mean_y_bar_sig_z
             - 1./2.*mean_z_sig_z 
-            - (1./2*mean_z_T_z)/self.params['n_data'] 
-            + log_det_sum/self.params['n_data'])*self.params['n_data']
+            - (1./2*mean_z_T_z)/self.batch_size 
+            + log_det_sum/self.batch_size)*self.batch_size
         
         if print_results:
             print_log_det_sum = log_det_sum.clone().detach().cpu().item()
@@ -483,8 +486,9 @@ class VB(BaseModel):
             elbo: The ELBO objective as a tensorflow object
         """
         var_inv_vec = torch.exp(-2 * self.log_sigma)
-
+ 
         # Note that for this VB scheme the ELBO is completely deterministic
+        self.batch_size = x.shape[0]
         y_sig_y = torch.sum((x - self.delta)**2 * var_inv_vec)
         y_sig_mu = torch.sum((x - self.delta) * var_inv_vec * self.mu_z)
 
@@ -493,11 +497,11 @@ class VB(BaseModel):
         mu_sig_mu = torch.sum(self.mu_z**2 * var_inv_vec)
         mu_T_mu = torch.sum(self.mu_z**2)
 
-        Nd2_log2pi = params['n_data']*self.d/2*np.log(2*np.pi)
+        Nd2_log2pi = self.batch_size*self.d/2*np.log(2*np.pi)
 
         elbo = (- Nd2_log2pi + torch.sum(self.log_sigma_z) 
-            - params['n_data']*torch.sum(self.log_sigma) - 1/2*y_sig_y 
-            + y_sig_mu - params['n_data']/2*(var_Z_over_var_X + mu_sig_mu)
+            - self.batch_size*torch.sum(self.log_sigma) - 1/2*y_sig_y 
+            + y_sig_mu - self.batch_size/2*(var_Z_over_var_X + mu_sig_mu)
             - 1/2*torch.sum(torch.exp(2*self.log_sigma_z)) - 1/2*mu_T_mu 
             - self.d/2
             )
