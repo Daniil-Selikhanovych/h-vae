@@ -6,7 +6,8 @@ Importance Weighted Autoencoder - [https://arxiv.org/abs/1509.00519](https://arx
 Planar Normalizing Flows - [https://arxiv.org/abs/1505.05770](https://arxiv.org/abs/1505.05770);
 Inverse Autoregressive Flows - [https://arxiv.org/abs/1606.04934](https://arxiv.org/abs/1606.04934).
 
-
+## Project proposal
+Link to the project proposal - [https://drive.google.com/file/d/1-q50kvccrze68GvE1DEoaRx2Kq_54LeG/view?usp=sharing](https://drive.google.com/file/d/1-q50kvccrze68GvE1DEoaRx2Kq_54LeG/view?usp=sharing).
 
 ## Requirements
 
@@ -32,6 +33,25 @@ All experiments can be found in the underlying notebooks:
 |[demos/hvae_gaussian_dim_(25/50/100/200/300/400).ipynb](https://github.com/Daniil-Selikhanovych/h-vae/blob/master/demos/hvae_gaussian_dim_300.ipynb) | **HVAE vs PNF/IAF/VB on Gaussian Model:** experiments with learning Hamiltonian Variational Auto-Encoder, Planar Normalizing Flows, Inverse Autoregressive Normalizing Flows, Variational Bayes for Gaussian Model in [https://arxiv.org/abs/1805.11328](https://arxiv.org/abs/1805.11328), comparison of learned $\Delta$ and $\Sigma$ parameters for all methods, comparison of learning processes. Number in the name of notebooks denotes the dimensionality $d$ for the problem.|
 
 For convenience, we have also implemented a framework and located it correspondingly in [gaussians/api](https://github.com/Daniil-Selikhanovych/h-vae/blob/master/gaussians/api).
+
+## Results
+We compared all discussed methods for dimensions $d = 25, 50, 100, 200, 300, 400$. Authors trained their models using optimization process for the whole dataset, but we found that HVAE results are better and training process is faster when the dataset is divided on batches. HVAE and normalizing flows were trained for $2000$ iterations across dataset divided on batches with $256$ samples. For all experiments the dataset has $N = 10,000$ points and training was done using RMSProp \citep{tieleman2017divide} with a learning rate of $10^{-3}$ and were conducted with fix random seed = $12345$. We average the results for predicted $\theta$ for $3$ different generated datasets according to Gaussian model and present the mean results in the following figures: 
+
+For Variational Bayes we trained it for big dimensionality $d \geq 100$ more iterations ($3000$ or $4000$) due to the fact that $2000$ iterations were not enough for the convergence of ELBO. HVAE with tempering and IAF have the best learned $\hat{\theta} = \{\Delta, \mathbf{\Sigma}\}$ for the big dimensionality $d \geq 100$. Moreover, HVAE is good for $\mathbf{\Sigma}$ prediction for all dimensions as well Variational Bayes scheme. However, Variationl Bayes suffers most on prediction $\Delta$ as the dimension increases. Planar normalizing flows suffer on prediction $\mathbf{\Sigma}$ compared to IAF. Also we compare HVAE with tempering and without tempering, see table \ref{tab:hvae-theta} and the figure \ref{fig:hvae-tempering-theta}. We can see that the tempered methods perform better than their non-tempered counterparts; this shows that time-inhomogeneous dynamics are a key ingredient in the effectiveness of the method. 
+
+## Pretrained Models
+
+| Models      | Description |
+|-----------|------------|
+|[HVAE & IWAE on MNIST](https://drive.google.com/drive/folders/18KuruFMjmGfgyt_km747P4QuDYtVbJec?usp=sharing) |models from experiments in [demos/mnist.ipynb](https://github.com/Daniil-Selikhanovych/h-vae/blob/master/demos/mnist.ipynb)|
+
+## LaTex in Readme
+
+We have used [`readme2tex`](https://github.com/leegao/readme2tex) to render LaTex code in this Readme. Install the corresponding hook and change the command to fix the issue with broken paths:
+```bash
+python -m readme2tex --output README.md README.tex.md  --branch master --svgdir 'svgs' --nocdn
+```
+
 
 ## Our team
 
