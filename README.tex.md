@@ -35,9 +35,26 @@ All experiments can be found in the underlying notebooks:
 For convenience, we have also implemented a framework and located it correspondingly in [gaussians/api](https://github.com/Daniil-Selikhanovych/h-vae/blob/master/gaussians/api).
 
 ## Results
-We compared all discussed methods for dimensions $d = 25, 50, 100, 200, 300, 400$. Authors trained their models using optimization process for the whole dataset, but we found that HVAE results are better and training process is faster when the dataset is divided on batches. HVAE and normalizing flows were trained for $2000$ iterations across dataset divided on batches with $256$ samples. For all experiments the dataset has $N = 10,000$ points and training was done using RMSProp \citep{tieleman2017divide} with a learning rate of $10^{-3}$ and were conducted with fix random seed = $12345$. We average the results for predicted $\theta$ for $3$ different generated datasets according to Gaussian model and present the mean results in the following figures: 
+We compared all discussed methods for dimensions $d = 25, 50, 100, 200, 300, 400$. Authors trained their models using optimization process for the whole dataset, but we found that HVAE results are better and training process is faster when the dataset is divided on batches. HVAE and normalizing flows were trained for $2000$ iterations across dataset divided on batches with $256$ samples. For all experiments the dataset has $N = 10,000$ points and training was done using RMSProp with a learning rate of $10^{-3}$ and were conducted with fix random seed = $12345$. We average the results for predicted $\theta$ for $3$ different generated datasets according to Gaussian model and present the mean results in the following figures: 
+<p align="center">
+  <img width="500" alt="Comparison of averages of $\|\theta_{true} - \hat{\theta}\|_{2}^{2}$ for several variational methods and choices of dimensionality $d$" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_theta_comparison.jpg?raw=true">
+</p>
+<p align="center">
+  <img width="500" alt="Comparison of averages of $\|\Delta_{true} - \hat{\Delta}\|_{2}^{2}$ for several variational methods and choices of dimensionality $d$" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
+</p>
+<p align="center">
+  <img width="500" alt="Comparison of averages of $\|\mathbf{\Sigma}_{true} - \hat{\mathbf{\Sigma}}\|_{2}^{2}$ for several variational methods and choices of dimensionality $d$" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
+</p>
+<p align="center">
+  <img width="500" alt="Comparison of learning processes for different losses" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/gaussian_learning_processes.jpg?raw=true">
+</p>
+For Variational Bayes we trained it for big dimensionality $d \geq 100$ more iterations ($3000$ or $4000$) due to the fact that $2000$ iterations were not enough for the convergence of ELBO. HVAE with tempering and IAF have the best learned $\hat{\theta} = \{\Delta, \mathbf{\Sigma}\}$ for the big dimensionality $d \geq 100$. Moreover, HVAE is good for $\mathbf{\Sigma}$ prediction for all dimensions as well Variational Bayes scheme. However, Variationl Bayes suffers most on prediction $\Delta$ as the dimension increases. Planar normalizing flows suffer on prediction $\mathbf{\Sigma}$ compared to IAF. 
 
-For Variational Bayes we trained it for big dimensionality $d \geq 100$ more iterations ($3000$ or $4000$) due to the fact that $2000$ iterations were not enough for the convergence of ELBO. HVAE with tempering and IAF have the best learned $\hat{\theta} = \{\Delta, \mathbf{\Sigma}\}$ for the big dimensionality $d \geq 100$. Moreover, HVAE is good for $\mathbf{\Sigma}$ prediction for all dimensions as well Variational Bayes scheme. However, Variationl Bayes suffers most on prediction $\Delta$ as the dimension increases. Planar normalizing flows suffer on prediction $\mathbf{\Sigma}$ compared to IAF. Also we compare HVAE with tempering and without tempering, see table \ref{tab:hvae-theta} and the figure \ref{fig:hvae-tempering-theta}. We can see that the tempered methods perform better than their non-tempered counterparts; this shows that time-inhomogeneous dynamics are a key ingredient in the effectiveness of the method. 
+Also we compare HVAE with tempering and without tempering, see figure:
+<p align="center">
+  <img width="500" alt="Comparison across HVAE with and without tempering of learning $\theta$, log-scale" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/hvae_theta_comparison.jpg?raw=true">
+</p>
+We can see that the tempered methods perform better than their non-tempered counterparts; this shows that time-inhomogeneous dynamics are a key ingredient in the effectiveness of the method. 
 
 ## Pretrained Models
 
