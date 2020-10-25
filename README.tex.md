@@ -27,7 +27,7 @@ You can use [`pip`](https://pip.pypa.io/en/stable/) or [`conda`](https://docs.co
 
 ## Contents
 
-All the experiments can be found in the underlying notebooks:
+All experiments can be found in the underlying notebooks:
 
 | Notebook      | Description |
 |-----------|------------|
