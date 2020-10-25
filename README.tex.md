@@ -39,12 +39,15 @@ We compared all discussed methods for dimensions $d = 25, 50, 100, 200, 300, 400
 <p align="center">
   <img width="500" alt="Comparison of averages of $\|\theta_{true} - \hat{\theta}\|_{2}^{2}$ for several variational methods and choices of dimensionality $d$" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_theta_comparison.jpg?raw=true">
 </p>
+
 <p align="center">
   <img width="500" alt="Comparison of averages of $\|\Delta_{true} - \hat{\Delta}\|_{2}^{2}$ for several variational methods and choices of dimensionality $d$" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
 </p>
+
 <p align="center">
   <img width="500" alt="Comparison of averages of $\|\mathbf{\Sigma}_{true} - \hat{\mathbf{\Sigma}}\|_{2}^{2}$ for several variational methods and choices of dimensionality $d$" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
 </p>
+
 <p align="center">
   <img width="500" alt="Comparison of learning processes for different losses" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/gaussian_learning_processes.jpg?raw=true">
 </p>

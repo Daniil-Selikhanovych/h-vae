@@ -39,12 +39,15 @@ We compared all discussed methods for dimensions <img src="svgs/f67096da04471c9f
 <p align="center">
   <img width="500" alt="Comparison of averages of <img src="svgs/5599bf1a72afc20a8fee2155ca64725c.svg?invert_in_darkmode" align=middle width=85.22671409999998pt height=31.50689519999998pt/> for several variational methods and choices of dimensionality <img src="svgs/2103f85b8b1477f430fc407cad462224.svg?invert_in_darkmode" align=middle width=8.55596444999999pt height=22.831056599999986pt/>" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_theta_comparison.jpg?raw=true">
 </p>
+
 <p align="center">
   <img width="500" alt="Comparison of averages of <img src="svgs/a0f395e5fc3b7094811899b1cd9554ff.svg?invert_in_darkmode" align=middle width=96.73363919999998pt height=31.141535699999984pt/> for several variational methods and choices of dimensionality <img src="svgs/2103f85b8b1477f430fc407cad462224.svg?invert_in_darkmode" align=middle width=8.55596444999999pt height=22.831056599999986pt/>" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
 </p>
+
 <p align="center">
   <img width="500" alt="Comparison of averages of <img src="svgs/ebeaa8b45891626fc6a4a8e1fd6cb53f.svg?invert_in_darkmode" align=middle width=96.64208729999999pt height=31.23293909999999pt/> for several variational methods and choices of dimensionality <img src="svgs/2103f85b8b1477f430fc407cad462224.svg?invert_in_darkmode" align=middle width=8.55596444999999pt height=22.831056599999986pt/>" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
 </p>
+
 <p align="center">
   <img width="500" alt="Comparison of learning processes for different losses" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/gaussian_learning_processes.jpg?raw=true">
 </p>
