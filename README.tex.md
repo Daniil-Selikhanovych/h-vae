@@ -37,15 +37,15 @@ For convenience, we have also implemented a framework and located it correspondi
 ## Results
 We compared all discussed methods for dimensions $d = 25, 50, 100, 200, 300, 400$. Authors trained their models using optimization process for the whole dataset, but we found that HVAE results are better and training process is faster when the dataset is divided on batches. HVAE and normalizing flows were trained for $2000$ iterations across dataset divided on batches with $256$ samples. For all experiments the dataset has $N = 10,000$ points and training was done using RMSProp with a learning rate of $10^{-3}$ and were conducted with fix random seed = $12345$. We average the results for predicted $\theta$ for $3$ different generated datasets according to Gaussian model and present the mean results in the following figures: 
 <p align="center">
-  <img width="500" alt="Comparison of learned average theta for several variational methods and choices of dimensionality $d$" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_theta_comparison.jpg?raw=true">
+  <img width="500" alt="Comparison of learned average theta" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_theta_comparison.jpg?raw=true">
 </p>
 
 <p align="center">
-  <img width="500" alt="Comparison of learned average delta for several variational methods and choices of dimensionality $d$" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
+  <img width="500" alt="Comparison of learned average delta" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
 </p>
 
 <p align="center">
-  <img width="500" alt="Comparison of learned average sigma for several variational methods and choices of dimensionality $d$" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
+  <img width="500" alt="Comparison of learned average sigma" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_sigma_comparison.jpg?raw=true">
 </p>
 
 <p align="center">

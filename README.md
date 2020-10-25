@@ -37,15 +37,15 @@ For convenience, we have also implemented a framework and located it correspondi
 ## Results
 We compared all discussed methods for dimensions <img src="svgs/f67096da04471c9f50e31b00f7f50c14.svg?invert_in_darkmode" align=middle width=198.5103615pt height=22.831056599999986pt/>. Authors trained their models using optimization process for the whole dataset, but we found that HVAE results are better and training process is faster when the dataset is divided on batches. HVAE and normalizing flows were trained for <img src="svgs/946a7aaf620371ac3590184a18ac92c1.svg?invert_in_darkmode" align=middle width=32.876837399999985pt height=21.18721440000001pt/> iterations across dataset divided on batches with <img src="svgs/9684129ebb778f48019391de80875252.svg?invert_in_darkmode" align=middle width=24.657628049999992pt height=21.18721440000001pt/> samples. For all experiments the dataset has <img src="svgs/28326d3ee086205259a55f1263e21783.svg?invert_in_darkmode" align=middle width=85.31952989999999pt height=22.465723500000017pt/> points and training was done using RMSProp with a learning rate of <img src="svgs/7478f3ddcc5c4a0d602772a3057efe42.svg?invert_in_darkmode" align=middle width=33.26498669999999pt height=26.76175259999998pt/> and were conducted with fix random seed = <img src="svgs/66598bc181ac25cca9c745e3ed395aec.svg?invert_in_darkmode" align=middle width=41.09604674999999pt height=21.18721440000001pt/>. We average the results for predicted <img src="svgs/27e556cf3caa0673ac49a8f0de3c73ca.svg?invert_in_darkmode" align=middle width=8.17352744999999pt height=22.831056599999986pt/> for <img src="svgs/5dc642f297e291cfdde8982599601d7e.svg?invert_in_darkmode" align=middle width=8.219209349999991pt height=21.18721440000001pt/> different generated datasets according to Gaussian model and present the mean results in the following figures: 
 <p align="center">
-  <img width="500" alt="Comparison of learned average theta for several variational methods and choices of dimensionality <img src="svgs/2103f85b8b1477f430fc407cad462224.svg?invert_in_darkmode" align=middle width=8.55596444999999pt height=22.831056599999986pt/>" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_theta_comparison.jpg?raw=true">
+  <img width="500" alt="Comparison of learned average theta" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_theta_comparison.jpg?raw=true">
 </p>
 
 <p align="center">
-  <img width="500" alt="Comparison of learned average delta for several variational methods and choices of dimensionality <img src="svgs/2103f85b8b1477f430fc407cad462224.svg?invert_in_darkmode" align=middle width=8.55596444999999pt height=22.831056599999986pt/>" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
+  <img width="500" alt="Comparison of learned average delta" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
 </p>
 
 <p align="center">
-  <img width="500" alt="Comparison of learned average sigma for several variational methods and choices of dimensionality <img src="svgs/2103f85b8b1477f430fc407cad462224.svg?invert_in_darkmode" align=middle width=8.55596444999999pt height=22.831056599999986pt/>" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_delta_comparison.jpg?raw=true">
+  <img width="500" alt="Comparison of learned average sigma" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/all_sigma_comparison.jpg?raw=true">
 </p>
 
 <p align="center">
