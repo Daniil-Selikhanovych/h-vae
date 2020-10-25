@@ -1,9 +1,11 @@
 # h-vae
-Project based on https://arxiv.org/abs/1805.11328.
-Used papers: 
-Importance Weighted Autoencoder --- https://arxiv.org/abs/1509.00519;
-Planar Normalizing Flows --- https://arxiv.org/abs/1505.05770;
-Inverse Aytoregressive Flows --- https://arxiv.org/abs/1606.04934.
+Project based on [https://arxiv.org/abs/1805.11328](https://arxiv.org/abs/1805.11328).
+
+Used papers:
+ 
+Importance Weighted Autoencoder - [https://arxiv.org/abs/1509.00519](https://arxiv.org/abs/1509.00519);
+Planar Normalizing Flows - [https://arxiv.org/abs/1505.05770](https://arxiv.org/abs/1505.05770);
+Inverse Autoregressive Flows - [https://arxiv.org/abs/1606.04934](https://arxiv.org/abs/1606.04934).
 
 
 
