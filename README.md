@@ -33,6 +33,19 @@ All experiments can be found in the underlying notebooks:
 
 For convenience, we have also implemented a framework and located it correspondingly in [gaussians/api](https://github.com/Daniil-Selikhanovych/h-vae/blob/master/gaussians/api).
 
+## Pretrained Models
+
+| Models      | Description |
+|-----------|------------|
+|[HVAE & IWAE on MNIST](https://drive.google.com/drive/folders/18KuruFMjmGfgyt_km747P4QuDYtVbJec?usp=sharing) |models from experiments in [demos/mnist.ipynb](https://github.com/Daniil-Selikhanovych/h-vae/blob/master/demos/mnist.ipynb)|
+
+## LaTex in Readme
+
+We have used [`readme2tex`](https://github.com/leegao/readme2tex) to render LaTex code in this Readme. Install the corresponding hook and change the command to fix the issue with broken paths:
+```bash
+python -m readme2tex --output README.md README.tex.md  --branch master --svgdir 'svgs' --nocdn
+```
+
 ## Our team
 
 At the moment we are *Skoltech DS MSc, 2019-2021* students.
