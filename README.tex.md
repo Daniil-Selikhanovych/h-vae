@@ -64,8 +64,11 @@ We can see that the tempered methods perform better than their non-tempered coun
 
 ### MNIST
 We appeal to the binarized MNIST handwritten digit dataset as an example of image generative task. The training data has the following form: $\mathcal{D}=\left\{x_{1}, \ldots, x_{N}\right\}$, where $x_{i} \in \mathcal{X} \subseteq\{0,1\}^{d}$ for $d=28 \times 28=784$. We then formalize the generative model:
-$$\begin{aligned} z_{i} & \sim \mathcal{N}\left(0, I_{\ell}\right) \\ x_{i} \mid z_{i} & \sim \prod_{j=1}^{d} \operatorname{Bernoulli}\left(\left(x_{i}\right)_{j} \mid \pi_{\theta}\left(z_{i}\right)_{j}\right) \end{aligned}$$,
-
+$$
+\begin{aligned} z_{i} & \sim \mathcal{N}\left(0, I_{\ell}\right) \\ 
+x_{i} \mid z_{i} & \sim \prod_{j=1}^{d} \operatorname{Bernoulli}\left(\left(x_{i}\right)_{j} \mid \pi_{\theta}\left(z_{i}\right)_{j}\right), 
+\end{aligned}
+$$
 for $i \in[N],$ where $\left(x_{i}\right)_{j}$ is the $j^{t h}$ component of $x_{i}, z_{i} \in \mathcal{Z} \equiv \mathbb{R}^{\ell}$  is the latent variable associated with $x_{i},$ and $\pi_{\theta}: \mathcal{Z} \rightarrow \mathcal{X}$ is an encoder (convolutional neural network). The VAE approximate posterior is given by $q_{\theta, \phi}\left(z_{i} \mid x_{i}\right)=\mathcal{N}\left(z_{i} \mid \mu_{\phi}\left(x_{i}\right), \mathbf{\Sigma}_{\phi}\left(x_{i}\right)\right),$ where $\mu_{\phi}$ and $\Sigma_{\phi}$ are separate outputs of the encoder parametrized by $\phi,$ and $\Sigma_{\phi}$ is constrained to be diagonal. 
 
 We set the dimensionalty of the latent space to $l = 64$. As we need both means and variances to parametrize the VAE posterior distribution, the output dimension of the linear layer is set to $l_{\mu, \sigma} = 128$. We use Adam optimizer with standard parameters and learning rate set to $10^{-3}$. 
