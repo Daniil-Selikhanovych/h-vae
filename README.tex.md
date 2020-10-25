@@ -10,7 +10,6 @@ Inverse Autoregressive Flows - [https://arxiv.org/abs/1606.04934](https://arxiv.
 
 
 
-
 ## Requirements
 
 We have run the experiments on Linux. The versions are given in brackets. The following packages are used in the implementation:
