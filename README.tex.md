@@ -61,6 +61,7 @@ Also we compare HVAE with tempering and without tempering, see figure:
   <img width="500" alt="Comparison across HVAE with and without tempering of learning theta, log-scale" src="https://github.com/Daniil-Selikhanovych/h-vae/blob/master/images/hvae_theta_comparison.jpg?raw=true">
 </p>
 We can see that the tempered methods perform better than their non-tempered counterparts; this shows that time-inhomogeneous dynamics are a key ingredient in the effectiveness of the method. 
+
 ### MNIST
 We appeal to the binarized MNIST handwritten digit dataset as an example of image generative task. The training data has the following form: $\mathcal{D}=\left\{x_{1}, \ldots, x_{N}\right\}$, where $x_{i} \in \mathcal{X} \subseteq\{0,1\}^{d}$ for $d=28 \times 28=784$. We then formalize the generative model:
 $$\begin{aligned} z_{i} & \sim \mathcal{N}\left(0, I_{\ell}\right) \\ x_{i} \mid z_{i} & \sim \prod_{j=1}^{d} \operatorname{Bernoulli}\left(\left(x_{i}\right)_{j} \mid \pi_{\theta}\left(z_{i}\right)_{j}\right) \end{aligned}$$,
@@ -95,6 +96,8 @@ To better understand the behavior of both models, we study the decoded latent ve
 
 In these figures one can clearly see that HVAE encoded vectors often correspond to the class that is different from the ground-truth, even though they are sharper. At the same time, IWAE produces reconstructions that are close to the true images. 
 
+### Details
+More details about experiments and settings can be found in the report [https://github.com/Daniil-Selikhanovych/h-vae/blob/master/report/hvae_report.pdf](https://github.com/Daniil-Selikhanovych/h-vae/blob/master/report/hvae_report.pdf).
 
 ## Pretrained Models
 
